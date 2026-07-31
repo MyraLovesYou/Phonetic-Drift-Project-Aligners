@@ -12,10 +12,8 @@ def format_c_phrases(target_words):
     words = target_words.split("|")
     for word in words:
         if is_english_word(word):
-            print(f"Detected {word} as en")
             return_string += EN_START + word + EN_END + " "
         else:
-            print(f"Detected {word} as cn (or other)")
             sentence = CH_START + word + CH_END
             sentence = " ".join(sentence)
             return_string += sentence + " "
