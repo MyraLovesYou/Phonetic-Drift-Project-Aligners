@@ -37,7 +37,8 @@ for row in subset.itertuples():
     transcript += format_c_phrases(second_half)
     with open(output_file, "w", encoding="utf-8") as file:
         try:
-            file.write(transcript)
+            for phrase in transcript:
+                file.write(phrase + "\n")
             print(f"Wrote transcript to {output_file}.")
         except:
             print(f"Failed to write to {output_file}")
