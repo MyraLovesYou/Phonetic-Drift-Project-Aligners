@@ -1,6 +1,5 @@
 import torch
 import soundfile as sf
-import wave
 from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 from src.textgrid_allignment import create_split_textgrids, read_transcript, align_speech_text
 
