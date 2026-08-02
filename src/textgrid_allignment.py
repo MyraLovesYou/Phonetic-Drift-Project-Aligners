@@ -1,11 +1,9 @@
-import wave
 from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 from praatio import textgrid
 from praatio.data_classes.interval_tier import Interval
 
 
 def detect_lang(text):
-    """Utility helper: Returns 'zh' if CJK characters are found, else 'en'."""
     if any('\u4e00' <= char <= '\u9fff' for char in text):
         return "zh"
     return "en"
