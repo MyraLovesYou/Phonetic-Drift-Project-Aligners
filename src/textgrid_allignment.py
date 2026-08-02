@@ -59,3 +59,31 @@ def create_split_textgrids(base_name, segments, total_duration):
     tg_zh.addTier(tier_zh_2)
     tg_zh.save(f"data/test/test_P01/corpus_mandarin/{base_name}.TextGrid", includeBlankSpaces=True, format="short_textgrid")
 
+def merge_all_tiers(english_tg_path, mandarin_tg_path, output_tg_path):
+    tg_en = textgrid.openTextgrid(english_tg_path, includeEmptyIntervals=False)
+    tg_zh = textgrid.openTextgrid(mandarin_tg_path, includeEmptyIntervals=False)
+
+    min_time = min(tg_en.minTimestamp, tg_zh.minTimestamp)
+    max_time = max(tg_en.maxTimestamp, tg_zh.maxTimestamp)
+    merged_tg = textgrid.Textgrid(
+        minTimestamp=min_time, 
+        maxTimestamp=max_time
+    )
+    
+    zh_words = tg_zh._tierDict["words"]
+    zh_phones = tg_zh._tierDict["phones"]
+    en_words = tg_en._tierDict["words"]
+    en_phones = tg_en._tierDict["phones"]
+    zh_words.name = "mandarin_words"
+    zh_phones.name = "mandarin_phones"
+    en_words.name = "english_words"
+    en_phones.name = "english_phones"
+
+    merged_tg.addTier(zh_words)
+    merged_tg.addTier(zh_phones)
+    merged_tg.addTier(en_words)
+    merged_tg.addTier(en_phones)
+
+        
+    merged_tg.save(output_tg_path, includeBlankSpaces=True, format="short_textgrid")
+
