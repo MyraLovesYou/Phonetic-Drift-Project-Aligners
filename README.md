@@ -8,7 +8,7 @@ This is a set of tools to prepare English-Mandarin audio transcripts for 2 passe
   
 </div>
 
-## Running on local machine
+## Installation
 
 1. Clone this repository.
 
