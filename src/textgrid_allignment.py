@@ -1,7 +1,8 @@
 from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 from praatio import textgrid
 from praatio.data_classes.interval_tier import Interval
-
+from pathlib import Path
+from collections import defaultdict
 
 def detect_lang(text):
     if any('\u4e00' <= char <= '\u9fff' for char in text):
@@ -29,10 +30,11 @@ def align_speech_text(speech_timestamps, transcript_chunks):
         segments.append((start_time, end_time, text, lang))
     return segments
 
-def create_split_textgrids(base_name, segments, total_duration):
+def create_split_textgrids(output_dir, base_name, segments, total_duration):
     en_intervals = []
     zh_intervals = []
-
+    en_dir = output_dir + "/corpus_en/" + base_name
+    zh_dir = output_dir + "/corpus_zh/" + base_name
     for start, end, text, lang in segments:
         # Cap interval boundaries safely within [0, total_duration]
         start_time = max(0.0, start)
@@ -49,7 +51,7 @@ def create_split_textgrids(base_name, segments, total_duration):
     tier_zh_empty = textgrid.IntervalTier("Mandarin", [], 0.0, total_duration)
     tg_en.addTier(tier_en_1)
     tg_en.addTier(tier_zh_empty)
-    tg_en.save(f"data/test/test_P01/corpus_english/{base_name}.TextGrid", includeBlankSpaces=True, format="short_textgrid")
+    tg_en.save(en_dir, includeBlankSpaces=True, format="short_textgrid")
 
 
     tg_zh = textgrid.Textgrid(minTimestamp=0.0, maxTimestamp=total_duration)
@@ -57,7 +59,7 @@ def create_split_textgrids(base_name, segments, total_duration):
     tier_zh_2 = textgrid.IntervalTier("Mandarin", zh_intervals, 0.0, total_duration)
     tg_zh.addTier(tier_en_empty)
     tg_zh.addTier(tier_zh_2)
-    tg_zh.save(f"data/test/test_P01/corpus_mandarin/{base_name}.TextGrid", includeBlankSpaces=True, format="short_textgrid")
+    tg_zh.save(zh_dir, includeBlankSpaces=True, format="short_textgrid")
 
 def merge_all_tiers(english_tg_path, mandarin_tg_path, output_tg_path):
     tg_en = textgrid.openTextgrid(english_tg_path, includeEmptyIntervals=False)
@@ -86,4 +88,31 @@ def merge_all_tiers(english_tg_path, mandarin_tg_path, output_tg_path):
 
         
     merged_tg.save(output_tg_path, includeBlankSpaces=True, format="short_textgrid")
+
+def match_files(fp_wav, fp_txt):
+    directories = [
+        Path(fp_wav),
+        Path(fp_txt),
+    ]
+
+    grouped_files = defaultdict(list)
+
+    for dir_path in directories:
+        for file_path in dir_path.glob('*'):
+            if file_path.is_file():
+                # Get the first 3 letters of the filename
+                file_id = file_path.name[:3]
+                grouped_files[file_id].append(file_path)
+
+    matched_groups = {
+        file_id: files
+        for file_id, files in grouped_files.items()
+        if len(set(f.parent for f in files)) > 1  # Must appear in >1 distinct directory
+    }
+
+    for file_id, files in matched_groups.items():
+        print(f"\nID Match: [{file_id}]")
+        for file_path in files:
+            print(f"  - {file_path}")
+    return matched_groups
 
