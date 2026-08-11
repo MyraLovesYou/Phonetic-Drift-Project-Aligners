@@ -40,3 +40,10 @@ This file is run to generate .txt file transcripts for the entire dataset. It ou
 
 ### textgrid_prep.py
 This is the last script to run before running MFA....tbc
+
+### alignment commands for MFA
+this will be updated to be more clear
+mfa validate wavs/ english_us_new english_mfa
+mfa align wavs/ english_us_new english_mfa output/first_1/en --beam 100
+mfa validate wavs/ mandarin_china_mfa mandarin_mfa
+mfa align wavs/ mandarin_china_mfa mandarin_mfa output/first_1/zh --beam 100
