@@ -76,10 +76,10 @@ def merge_all_tiers(english_tg_path, mandarin_tg_path, output_tg_path):
     zh_phones = tg_zh._tierDict["phones"]
     en_words = tg_en._tierDict["words"]
     en_phones = tg_en._tierDict["phones"]
-    zh_words.name = "mandarin_words"
-    zh_phones.name = "mandarin_phones"
-    en_words.name = "english_words"
-    en_phones.name = "english_phones"
+    zh_words.name = "mandarin words"
+    zh_phones.name = "mandarin phones"
+    en_words.name = "english words"
+    en_phones.name = "english phones"
 
     merged_tg.addTier(zh_words)
     merged_tg.addTier(zh_phones)
