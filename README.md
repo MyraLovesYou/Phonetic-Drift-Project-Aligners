@@ -45,11 +45,11 @@ This is the last script to run before running MFA....tbc
 this will be updated to be more clear. Keep in mind you may have to add oovs to the premade dictionary.
 
 ```
-mfa validate wavs/ english_us_new english_mfa
+mfa validate ./ english_us_new english_mfa
 
-mfa align wavs/ english_us_new english_mfa output/first_1/en --beam 100
+mfa align ./ english_us_new english_mfa ../p00_1.1textgrids --beam 100
 
-mfa validate wavs/ mandarin_china_mfa mandarin_mfa
+mfa validate ./ mandarin_china_mfa mandarin_mfa
 
-mfa align wavs/ mandarin_china_mfa mandarin_mfa output/first_1/zh --beam 100
+mfa align ./ mandarin_china_mfa mandarin_mfa ../P00_1.1textgrids --beam 100
 ```
