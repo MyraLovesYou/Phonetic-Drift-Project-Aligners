@@ -1,0 +1,29 @@
+import sys
+from pathlib import Path
+
+# Get the absolute path of the directory one level up from this script
+root_path = str(Path(__file__).resolve().parent.parent)
+
+# Add it to sys.path so Python knows where to look for 'src'
+if root_path not in sys.path:
+    sys.path.append(root_path)
+from src.structure_sentence import format_c_phrases
+folder = Path(r"C:\Users\dolph\Downloads\silces\First")
+
+FILLER = ["poodle", "spooky", "footer", "soothing", "chooser", "普通", "部队", "步伐", "兔子", "读书"]
+
+for wav in folder.rglob("*"):
+    if not wav.is_file():
+        continue
+    name = wav.stem
+    name_clean = name.replace("1", "")
+    if name_clean in FILLER:
+        continue
+    phrase = format_c_phrases(name_clean)
+    file_name = wav.with_suffix(".txt")
+    with open(file_name, "w", encoding="utf-8") as file:
+        try:
+            file.write(phrase[0])
+            print(f"Wrote transcript to {file_name}.")
+        except:
+            print(f"Failed to write to {file_name}")
