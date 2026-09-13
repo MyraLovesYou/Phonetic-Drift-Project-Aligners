@@ -47,7 +47,7 @@ this will be updated to be more clear. Keep in mind you may have to add oovs to 
 ```
 mfa validate ./ english_us_new english_mfa
 
-mfa align ./ english_us_new english_mfa ../p00_1.1textgrids --beam 100
+mfa align ./ english_us_new english_mfa ../P00_1.1textgrids --beam 100
 
 mfa validate ./ mandarin_china_mfa mandarin_mfa
 
