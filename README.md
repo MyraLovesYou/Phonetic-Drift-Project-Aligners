@@ -1,4 +1,4 @@
-# Phonetic-Drift-Project-Aligners
+# Automated Bilingual Speech Alignment Pipeline
 This is a set of tools to prepare English-Mandarin audio transcripts for 2 passes of allignment through Montreal Forced Aligners. The output TextGrid contains English words, English phones, Mandarin words, and Mandarin phones all on different tiers.
 
 <div align="center">
