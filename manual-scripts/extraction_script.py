@@ -6,27 +6,43 @@ from parselmouth.praat import call
 from praatio import textgrid
 import unicodedata
 import re
-# -------------------------------------------------------------------------
-# Configuration
-# -------------------------------------------------------------------------
+
 DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P02_firstslices")  # Directory containing .wav and .TextGrid files
 OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
 
-# Tier names inside your TextGrids
 WORD_TIER_NAME = "words"
 PHONE_TIER_NAME = "phones"
 
-# Target filters (leave TARGET_WORDS empty to accept target vowels in any word)
-TARGET_WORDS = {"劈","柴", "peaches", "pitches", "提","出", "teaches", "tickle", "皮","裤", "peacock", "pickle", "提","示", "teases", 
-                "tissues", "习","题" "seating", "sitting", "爬","山", "配","上", "parses", "passes", "罢","工", "被","告", "bargain", 
-                "baggage", "哈","欠", "黑","白", "harbor", "hacker", "发","展", "非","洲", "father", "faster"}
+
+TARGET_WORDS = {"劈", "peaches", "pitches", "提", "teaches", "tickle", "皮", "peacock", "pickle", "提", "teases", 
+                "tissues", "习","seating", "sitting", "爬", "配", "parses", "passes", "罢", "被", "bargain", 
+                "baggage", "哈", "黑","harbor", "hacker", "发","非", "father", "faster"}
 TARGET_VOWELS = {"i", "ɪ", "a", "ɑ", "e", "æ"}
 
 # Formant analysis parameters
 # Rule of thumb: 5500 Hz for adult females/children, 5000 Hz for adult males
+
 MAX_FORMANT_CEILING = 5500.0  
 MAX_NUM_FORMANTS = 5.0
 TIME_STEP = 0.005  # 5 ms
+def get_phone_and_neighbors(tier, target_time):
+    entries = tier.entries
+    
+    for i, (start, end, label) in enumerate(entries):
+        if start <= target_time <= end:
+            prev_label = entries[i - 1][2].strip() if i > 0 else None
+            curr_label = label.strip()
+            next_label = entries[i + 1][2].strip() if i + 1 < len(entries) else None
+            
+            return {
+                "prev": prev_label,
+                "curr": curr_label,
+                "next": next_label,
+                "start": start,
+                "end": end,
+            }
+            
+    return None
 def clean_mandarin_phone(phone_str: str) -> str:
     """
     Strips Chao tone letters (e.g., 'i˧˥' -> 'i'),
