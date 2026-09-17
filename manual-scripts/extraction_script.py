@@ -7,7 +7,9 @@ from praatio import textgrid
 import unicodedata
 import re
 
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P02_firstslices")  # Directory containing .wav and .TextGrid files
+ID = "P05" # edit this per file
+TIME = "1"
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P05_5.30slices")  # Directory containing .wav and .TextGrid files
 OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
 
 WORD_TIER_NAME = "words"
@@ -17,7 +19,7 @@ PHONE_TIER_NAME = "phones"
 TARGET_WORDS = {"劈", "peaches", "pitches", "提", "teaches", "tickle", "皮", "peacock", "pickle", "提", "teases", 
                 "tissue", "习","seating", "sitting", "爬", "配", "parses", "passes", "罢", "被", "bargain", 
                 "baggage", "哈", "黑","harbor", "hacker", "发","非", "father", "faster"}
-TARGET_VOWELS = {"i", "ɪ", "a", "ɑ", "e", "æ"}
+TARGET_VOWELS = {"i", "ɪ", "a", "ɑ", "e", "æ"} #not being used
 
 # Formant analysis parameters
 # Rule of thumb: 5500 Hz for adult females/children, 5000 Hz for adult males
@@ -39,6 +41,12 @@ def get_phone_and_neighbors(tier, target_time):
                 next_label = raw_next_label.strip()
             else:
                 next_start, next_end, next_label = None, None, None
+
+            if i + 2 < len(entries):
+                nextnext_start, nextnext_end, raw_nextnext_label = entries[i + 2]
+                nextnext_label = raw_nextnext_label.strip()
+            else:
+                nextnext_start, nextnext_end, nextnext_label = None, None, None
             
             return {
                 "prev": prev_label,
@@ -48,19 +56,23 @@ def get_phone_and_neighbors(tier, target_time):
                 "next": next_label,
                 "next_start": round(next_start, 4) if next_start is not None else None,
                 "next_end": round(next_end, 4) if next_end is not None else None,
+                "nextnext": nextnext_label,
+                "nextnext_start": round(nextnext_start, 4) if nextnext_start is not None else None,
+                "next_end": round(nextnext_end, 4) if nextnext_end is not None else None,
             }
             
     return None  # No interval matched the timestamp
 def clean_mandarin_phone(phone_str: str) -> str:
     """
     Strips Chao tone letters (e.g., 'i˧˥' -> 'i'),
+    length marks (e.g., 'iː' -> 'i', 'iˑ' -> 'i'),
     tone digits (e.g., 'i35' or 'i2' -> 'i'),
     and standard tone accents (e.g., 'ǐ' -> 'i').
     """
-    # 1. Strip Chao tone letters (Unicode U+02E5 to U+02EB: ˥, ˦, ˧, ˨, ˩)
-    cleaned = re.sub(r"[\u02e5-\u02eb]", "", phone_str.strip())
+    # 1. Strip Chao tone letters (\u02e5-\u02eb) and IPA length marks (ː \u02d0, ˑ \u02d1, :)
+    cleaned = re.sub(r"[\u02e5-\u02eb\u02d0\u02d1:]", "", phone_str.strip())
 
-    # 2. Decompose and strip standard diacritics (e.g., combining tone marks)
+    # 2. Decompose and strip standard diacritics (combining tone marks/accents)
     decomposed = unicodedata.normalize("NFD", cleaned)
     cleaned = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
 
@@ -122,20 +134,27 @@ def extract_formants():
             clean_phone = clean_mandarin_phone(raw_phone)
             p_start = left_phones.get("next_start")
             p_end = left_phones.get("next_end")
-            midpoint = (p_start + p_end) / 2.0
+            fraction = 0.50
+            if clean_phone == "ej":
+                fraction = 0.30
+            elif clean_phone == "ɑ" and left_phones.get("nextnext_label") == "ɹ" and (p_end - p_start) > (left_phones.get("nextnext_end") - left_phones.get("nextnext_start")):
+                # this long if is just looking for ar and comparing their lengths
+                fraction = 0.60
+            target_time = p_start + fraction * (p_end - p_start)
+            # midpoint = (p_start + p_end) / 2.0
             # Query Praat Burg object at midpoint
-            f1 = call(formant_obj, "Get value at time", 1, midpoint, "Hertz", "Linear")
-            f2 = call(formant_obj, "Get value at time", 2, midpoint, "Hertz", "Linear")
+            f1 = call(formant_obj, "Get value at time", 1, target_time, "Hertz", "Linear")
+            f2 = call(formant_obj, "Get value at time", 2, target_time, "Hertz", "Linear")
             print("here")
             results.append({
-                "ID": "P02",
+                "ID": ID,
                 "word": re.sub(r'\d+', '', tg_path.stem),
                 "vowel": clean_phone,
-                "time": "1",
+                "time": TIME,
                 "start_time": round(p_start, 4),
                 "end_time": round(p_end, 4),
                 "duration_ms": round((p_end - p_start) * 1000, 2),
-                "midpoint_time": round(midpoint, 4),
+                "target_time": round(target_time, 4),
                 "f1_hz": round(f1, 2) if not math.isnan(f1) else None,
                 "f2_hz": round(f2, 2) if not math.isnan(f2) else None,
             })
@@ -143,10 +162,16 @@ def extract_formants():
 
 
 
-    # Save to Excel
-    df = pd.DataFrame(results)
-    df.to_excel(OUTPUT_EXCEL, index=False)
-    print(f"Extraction complete! Extracted {len(df)} tokens -> {OUTPUT_EXCEL.resolve()}")
+    new_df = pd.DataFrame(results)
+
+    if OUTPUT_EXCEL.exists():
+        existing_df = pd.read_excel(OUTPUT_EXCEL)
+        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+        combined_df.to_excel(OUTPUT_EXCEL, index=False)
+        print(f"Extraction complete! Appended {len(new_df)} new tokens (Total: {len(combined_df)}) -> {OUTPUT_EXCEL.resolve()}")
+    else:
+        new_df.to_excel(OUTPUT_EXCEL, index=False)
+        print(f"Extraction complete! Created new file with {len(new_df)} tokens -> {OUTPUT_EXCEL.resolve()}")
 
 
 if __name__ == "__main__":
