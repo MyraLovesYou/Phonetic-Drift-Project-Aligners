@@ -115,18 +115,18 @@ def extract_formants():
 
         for w_start, w_end, word_label in word_tier.entries:
             clean_word = word_label.strip()
-            print(clean_word)
+          
             # Filter by target words if specified
             if TARGET_WORDS and clean_word.lower() not in {w.lower() for w in TARGET_WORDS}:
                 continue
 
             left_phones = get_phone_and_neighbors(phone_tier, w_start)
-            print(left_phones)
+           
             if left_phones == None:
                 print(f"issue with target vowel on file {tg_path.stem}")
                 continue
             target = left_phones.get("next")
-            print(target)
+           
             if target == None:
                 print(f"issue with target vowel on file {tg_path.stem}")
                 continue
