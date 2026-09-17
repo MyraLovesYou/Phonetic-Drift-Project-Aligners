@@ -7,10 +7,10 @@ from praatio import textgrid
 import unicodedata
 import re
 
-ID = "P05" # edit this per file
-TIME = "1"
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P05_5.30slices")  # Directory containing .wav and .TextGrid files
-OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
+ID = "P02" # edit this per file
+TIME = 1
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P02_firstslices")  # Directory containing .wav and .TextGrid files
+OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\extraction.xlsx")
 
 WORD_TIER_NAME = "words"
 PHONE_TIER_NAME = "phones"
