@@ -13,10 +13,10 @@ root_path = str(Path(__file__).resolve().parent.parent)
 if root_path not in sys.path:
     sys.path.append(root_path)
 from src.structure_sentence import is_english_word
-target_sheet = "First"  # The name of the tab you want to append to
-ID = "P05" # edit this per file
-TIME = 1
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P05_5.30slices")  # Directory containing .wav and .TextGrid files
+target_sheet = "Seventh"  # The name of the tab you want to append to
+ID = "P24" # edit this per file
+TIME = 7
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\Seventh\P24_9.10slices")  # Directory containing .wav and .TextGrid files
 OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
 
 WORD_TIER_NAME = "words"
