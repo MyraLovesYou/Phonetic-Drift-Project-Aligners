@@ -13,7 +13,7 @@ root_path = str(Path(__file__).resolve().parent.parent)
 if root_path not in sys.path:
     sys.path.append(root_path)
 from src.structure_sentence import is_english_word
-
+target_sheet = "First"  # The name of the tab you want to append to
 ID = "P05" # edit this per file
 TIME = 1
 DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P05_5.30slices")  # Directory containing .wav and .TextGrid files
@@ -65,7 +65,7 @@ def get_phone_and_neighbors(tier, target_time):
                 "next_end": round(next_end, 4) if next_end is not None else None,
                 "nextnext": nextnext_label,
                 "nextnext_start": round(nextnext_start, 4) if nextnext_start is not None else None,
-                "next_end": round(nextnext_end, 4) if nextnext_end is not None else None,
+                "nextnext_end": round(nextnext_end, 4) if nextnext_end is not None else None,
             }
             
     return None  # No interval matched the timestamp
@@ -144,9 +144,11 @@ def extract_formants():
             fraction = 0.50
             if clean_phone == "ej":
                 fraction = 0.20
-            elif clean_phone == "ɑ" and left_phones.get("nextnext_label") == "ɹ" and (p_end - p_start) > (left_phones.get("nextnext_end") - left_phones.get("nextnext_start")):
+            elif clean_phone == "ɑ" and left_phones.get("nextnext") == "ɹ" and (p_end - p_start) > (left_phones.get("nextnext_end") - left_phones.get("nextnext_start")):
                 # this long if is just looking for ar and comparing their lengths
                 fraction = 0.60
+            elif clean_phone == "ɑ" and left_phones.get("nextnext") == "ɹ":
+                p_end = left_phones.get("nextnext_end")
             target_time = p_start + fraction * (p_end - p_start)
             # midpoint = (p_start + p_end) / 2.0
             # Query Praat Burg object at midpoint
@@ -174,14 +176,29 @@ def extract_formants():
 
     new_df = pd.DataFrame(results)
 
+
     if OUTPUT_EXCEL.exists():
-        existing_df = pd.read_excel(OUTPUT_EXCEL)
-        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-        combined_df.to_excel(OUTPUT_EXCEL, index=False)
-        print(f"Extraction complete! Appended {len(new_df)} new tokens (Total: {len(combined_df)}) -> {OUTPUT_EXCEL.resolve()}")
+        excel_file = pd.ExcelFile(OUTPUT_EXCEL)
+        
+        # Check if this specific sheet already exists in the workbook
+        if target_sheet in excel_file.sheet_names:
+            existing_df = pd.read_excel(OUTPUT_EXCEL, sheet_name=target_sheet)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+        else:
+            # Sheet doesn't exist yet in the file
+            combined_df = new_df
+
+        # Write back into the specific sheet without touching other sheets
+        with pd.ExcelWriter(OUTPUT_EXCEL, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+            combined_df.to_excel(writer, sheet_name=target_sheet, index=False)
+            
+        print(f"Appended {len(new_df)} rows to sheet '{target_sheet}'. Total in sheet: {len(combined_df)}")
+
     else:
-        new_df.to_excel(OUTPUT_EXCEL, index=False)
-        print(f"Extraction complete! Created new file with {len(new_df)} tokens -> {OUTPUT_EXCEL.resolve()}")
+        # If the Excel file doesn't exist at all, create it fresh
+        with pd.ExcelWriter(OUTPUT_EXCEL, engine="openpyxl") as writer:
+            new_df.to_excel(writer, sheet_name=target_sheet, index=False)
+        print(f"Created new file and sheet '{target_sheet}' with {len(new_df)} rows.")
 
 
 if __name__ == "__main__":
