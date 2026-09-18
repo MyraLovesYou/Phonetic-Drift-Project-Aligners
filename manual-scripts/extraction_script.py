@@ -6,11 +6,18 @@ from parselmouth.praat import call
 from praatio import textgrid
 import unicodedata
 import re
+import sys
+root_path = str(Path(__file__).resolve().parent.parent)
 
-ID = "P02" # edit this per file
+# Add it to sys.path so Python knows where to look for 'src'
+if root_path not in sys.path:
+    sys.path.append(root_path)
+from src.structure_sentence import is_english_word
+
+ID = "P05" # edit this per file
 TIME = 1
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P02_firstslices")  # Directory containing .wav and .TextGrid files
-OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\extraction.xlsx")
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\First\P05_5.30slices")  # Directory containing .wav and .TextGrid files
+OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
 
 WORD_TIER_NAME = "words"
 PHONE_TIER_NAME = "phones"
@@ -136,7 +143,7 @@ def extract_formants():
             p_end = left_phones.get("next_end")
             fraction = 0.50
             if clean_phone == "ej":
-                fraction = 0.30
+                fraction = 0.20
             elif clean_phone == "ɑ" and left_phones.get("nextnext_label") == "ɹ" and (p_end - p_start) > (left_phones.get("nextnext_end") - left_phones.get("nextnext_start")):
                 # this long if is just looking for ar and comparing their lengths
                 fraction = 0.60
@@ -145,9 +152,12 @@ def extract_formants():
             # Query Praat Burg object at midpoint
             f1 = call(formant_obj, "Get value at time", 1, target_time, "Hertz", "Linear")
             f2 = call(formant_obj, "Get value at time", 2, target_time, "Hertz", "Linear")
-            print("here")
+            language = "CN"
+            if is_english_word(word_label):
+                language = "EN"
             results.append({
                 "ID": ID,
+                "language": language,
                 "word": re.sub(r'\d+', '', tg_path.stem),
                 "vowel": clean_phone,
                 "time": TIME,
