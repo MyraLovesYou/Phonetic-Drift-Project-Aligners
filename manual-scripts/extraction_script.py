@@ -14,10 +14,9 @@ if root_path not in sys.path:
     sys.path.append(root_path)
 from src.structure_sentence import is_english_word
 target_sheet = "Seventh"  # The name of the tab you want to append to
-ID = "P24" # edit this per file
 TIME = 7
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\Seventh\P24_9.10slices")  # Directory containing .wav and .TextGrid files
-OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\output.xlsx")
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\Seventh")  # Directory containing .wav and .TextGrid files
+OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\formant_data_3.xlsx")
 
 WORD_TIER_NAME = "words"
 PHONE_TIER_NAME = "phones"
@@ -32,7 +31,7 @@ TARGET_VOWELS = {"i", "ɪ", "a", "ɑ", "e", "æ"} #not being used
 # Rule of thumb: 5500 Hz for adult females/children, 5000 Hz for adult males
 
 MAX_FORMANT_CEILING = 5500.0  
-MAX_NUM_FORMANTS = 5.0
+MAX_NUM_FORMANTS = 3.0
 TIME_STEP = 0.005  # 5 ms
 def get_phone_and_neighbors(tier, target_time):
     entries = tier.entries
@@ -89,13 +88,13 @@ def clean_mandarin_phone(phone_str: str) -> str:
     # 4. Normalize back to standard unicode
     return unicodedata.normalize("NFKC", cleaned).strip()
 
-def extract_formants():
+def extract_formants(folder, id):
     results = []
 
     # Find all TextGrids and match with corresponding .wav
-    tg_files = list(DATA_DIR.glob("*.TextGrid"))
+    tg_files = list(folder.glob("*.TextGrid"))
     if not tg_files:
-        print(f"No .TextGrid files found in {DATA_DIR.resolve()}")
+        print(f"No .TextGrid files found in {folder.resolve()}")
         return
 
     for tg_path in tg_files:
@@ -158,7 +157,7 @@ def extract_formants():
             if is_english_word(word_label):
                 language = "EN"
             results.append({
-                "ID": ID,
+                "ID": id,
                 "language": language,
                 "word": re.sub(r'\d+', '', tg_path.stem),
                 "vowel": clean_phone,
@@ -202,4 +201,7 @@ def extract_formants():
 
 
 if __name__ == "__main__":
-    extract_formants()
+    for subfolder in DATA_DIR.rglob('*'):
+        if subfolder.is_dir():
+            
+            extract_formants(subfolder, subfolder.name[:3])
