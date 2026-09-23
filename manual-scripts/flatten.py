@@ -24,4 +24,4 @@ def flatten_directory(target_dir: str | Path):
 
 if __name__ == "__main__":
     # Replace with your target folder path
-    flatten_directory(r"C:\Users\dolph\Downloads\silces\Seventh\P24_9.10slices")
+    flatten_directory(r"C:\Users\dolph\Downloads\Combined\Combined\Third_checked\P25_7.2slices")

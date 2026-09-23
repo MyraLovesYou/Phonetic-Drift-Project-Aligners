@@ -8,7 +8,7 @@ root_path = str(Path(__file__).resolve().parent.parent)
 if root_path not in sys.path:
     sys.path.append(root_path)
 from src.structure_sentence import format_c_phrases
-folder = Path(r"C:\Users\dolph\Downloads\silces\Sixth\P02_6.14slices")
+folder = Path(r"C:\Users\dolph\Downloads\Combined\(4) Data\(1) First\edit")
 
 FILLER = ["poodle", "spooky", "footer", "soothing", "chooser", "普通", "部队", "步伐", "兔子", "读书"]
 

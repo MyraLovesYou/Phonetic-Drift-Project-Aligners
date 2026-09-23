@@ -15,8 +15,8 @@ if root_path not in sys.path:
 from src.structure_sentence import is_english_word
 target_sheet = "Seventh"  # The name of the tab you want to append to
 TIME = 7
-DATA_DIR = Path(r"C:\Users\dolph\Downloads\silces\Seventh")  # Directory containing .wav and .TextGrid files
-OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\silces\First\formant_data_3.xlsx")
+DATA_DIR = Path(r"C:\Users\dolph\Downloads\Combined\Combined\Seventh_checked")  # Directory containing .wav and .TextGrid files
+OUTPUT_EXCEL = Path(r"C:\Users\dolph\Downloads\Combined\Combined\ext_formant_data.xlsx")
 
 WORD_TIER_NAME = "words"
 PHONE_TIER_NAME = "phones"
@@ -26,12 +26,26 @@ TARGET_WORDS = {"劈", "peaches", "pitches", "提", "teaches", "tickle", "皮", 
                 "tissue", "习","seating", "sitting", "爬", "配", "parses", "passes", "罢", "被", "bargain", 
                 "baggage", "哈", "黑","harbor", "hacker", "发","非", "father", "faster"}
 TARGET_VOWELS = {"i", "ɪ", "a", "ɑ", "e", "æ"} #not being used
-
+GENDERS = {"P01": 5000.0,
+           "P02": 5500.0,
+           "P05": 5000.0,
+           "P09": 5500.0,
+           "P10": 5500.0,
+           "P11": 5500.0,
+           "P12": 5000.0,
+           "P16": 5500.0,
+           "P18": 5500.0,
+           "P20": 5000.0,
+           "P21": 5500.0,
+           "P22": 5500.0,
+           "P23": 5500.0,
+           "P24": 5000.0,
+           "P25": 5500.0}
 # Formant analysis parameters
 # Rule of thumb: 5500 Hz for adult females/children, 5000 Hz for adult males
 
 MAX_FORMANT_CEILING = 5500.0  
-MAX_NUM_FORMANTS = 3.0
+MAX_NUM_FORMANTS = 5.0
 TIME_STEP = 0.005  # 5 ms
 def get_phone_and_neighbors(tier, target_time):
     entries = tier.entries
@@ -88,7 +102,7 @@ def clean_mandarin_phone(phone_str: str) -> str:
     # 4. Normalize back to standard unicode
     return unicodedata.normalize("NFKC", cleaned).strip()
 
-def extract_formants(folder, id):
+def extract_formants(folder, id, max_formant):
     results = []
 
     # Find all TextGrids and match with corresponding .wav
@@ -111,7 +125,7 @@ def extract_formants(folder, id):
         formant_obj = sound.to_formant_burg(
             time_step=TIME_STEP,
             max_number_of_formants=MAX_NUM_FORMANTS,
-            maximum_formant=MAX_FORMANT_CEILING,
+            maximum_formant=max_formant,
             window_length=0.025,
             pre_emphasis_from=50.0,
         )
@@ -204,4 +218,4 @@ if __name__ == "__main__":
     for subfolder in DATA_DIR.rglob('*'):
         if subfolder.is_dir():
             
-            extract_formants(subfolder, subfolder.name[:3])
+            extract_formants(subfolder, subfolder.name[:3], GENDERS.get(subfolder.name[:3], 5500.0))
